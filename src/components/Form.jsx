@@ -24,7 +24,7 @@ function Form({ route, method }) {
         res = await api.post(route, { username, password });
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
         localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-        navigate("/");
+        navigate("/home");
       } else {
         res = await api.post(route, {
           username: username,

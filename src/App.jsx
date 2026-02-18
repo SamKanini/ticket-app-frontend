@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoutes";
+import { ACCESS_TOKEN } from "./constants";
 
 function Logout() {
   localStorage.clear();
@@ -16,9 +17,24 @@ function RegisterAndLogout() {
   return <Register />;
 }
 function App() {
+  const isAuthenticated = !!localStorage.getItem(ACCESS_TOKEN);
+
   return (
     <BrowserRouter>
       <Routes>
+        {/* check if authenticated go to home if not go to register */}
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/home" replace />
+            ) : (
+              <Navigate to="/register" replace />
+            )
+          }
+        />
+        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route
           path="/"
           element={
@@ -27,9 +43,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<Login />} />
+
         <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
+        {/* <Route path="/register" element={<RegisterAndLogout />} /> */}
         <Route path="*" element={<NotFound />}></Route>
       </Routes>
     </BrowserRouter>
