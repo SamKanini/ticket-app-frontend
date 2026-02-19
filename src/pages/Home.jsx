@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import api from "../api";
 import Tickets from "../components/Tickets";
 import { useState, useEffect } from "react";
@@ -64,41 +65,44 @@ function Home() {
     if (!selectedTicket) {
       alert("No ticket selected");
       return;
-    }
+    } else {
+      <Navigate to="/login" />;
+      if (login === true) {
+        console.log("Purchasing ticket:", selectedTicket.id);
 
-    console.log("Purchasing ticket:", selectedTicket.id);
+        api
+          .post(`/api/tickets/${selectedTicket.id}/purchase/`)
+          .then((res) => {
+            console.log("Purchase successful:", res.data);
 
-    api
-      .post(`/api/tickets/${selectedTicket.id}/purchase/`)
-      .then((res) => {
-        console.log("Purchase successful:", res.data);
+            // Update the tickets list to mark this ticket as sold
+            setTickets(
+              tickets.map((ticket) =>
+                ticket.id === selectedTicket.id
+                  ? { ...ticket, is_sold: true, customer: res.data.customer }
+                  : ticket,
+              ),
+            );
 
-        // Update the tickets list to mark this ticket as sold
-        setTickets(
-          tickets.map((ticket) =>
-            ticket.id === selectedTicket.id
-              ? { ...ticket, is_sold: true, customer: res.data.customer }
-              : ticket,
-          ),
-        );
+            // Update event's available count
+            if (selectedEvent) {
+              setSelectedEvent({
+                ...selectedEvent,
+                available_tickets: selectedEvent.available_tickets - 1,
+              });
+            }
 
-        // Update event's available count
-        if (selectedEvent) {
-          setSelectedEvent({
-            ...selectedEvent,
-            available_tickets: selectedEvent.available_tickets - 1,
+            setShowPopup(false);
+            setSelectedTicket(null);
+            alert("Ticket purchased successfully!");
+          })
+          .catch((err) => {
+            console.log("Purchase error:", err);
+            console.log("Error response:", err.response);
+            alert(err.response?.data?.error || "Error purchasing ticket");
           });
-        }
-
-        setShowPopup(false);
-        setSelectedTicket(null);
-        alert("Ticket purchased successfully!");
-      })
-      .catch((err) => {
-        console.log("Purchase error:", err);
-        console.log("Error response:", err.response);
-        alert(err.response?.data?.error || "Error purchasing ticket");
-      });
+      }
+    }
   };
 
   if (loading) {

@@ -10,17 +10,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Default route redirects to register */}
-        <Route path="/" element={<Navigate to="/register" replace />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/register" element={<Register />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/login" element={<Login />} />
         {/* <Route path="/logout" element={<Logout />} />; */}
         {/* <Route path="/register" element={<RegisterAndLogout />} /> */}
         <Route path="*" element={<NotFound />}></Route>;
