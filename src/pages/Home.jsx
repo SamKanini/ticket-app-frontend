@@ -1,9 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 import Tickets from "../components/Tickets";
 import { useState, useEffect } from "react";
+import { ACCESS_TOKEN } from "../constants";
 
 function Home() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [tickets, setTickets] = useState([]);
@@ -62,46 +64,63 @@ function Home() {
 
   // Purchase the selected ticket
   const buyTicket = () => {
-    if (!selectedTicket) {
-      alert("No ticket selected");
-      return;
-    } else {
-      <Navigate to="/login" />;
-      if (login === true) {
-        console.log("Purchasing ticket:", selectedTicket.id);
+    //check if logged in
+    const token = localStorage.getItem("access");
 
-        api
-          .post(`/api/tickets/${selectedTicket.id}/purchase/`)
-          .then((res) => {
-            console.log("Purchase successful:", res.data);
+    if (!token) {
+      //Give options to register
+      
+      const shouldRegsister = window.confirm(
+        "You need an account to register \n\n" +
+        "Click Ok to Regsister (create account) \n" +
+        "Click Cancel to Login (If you have an account)"
+      )
 
-            // Update the tickets list to mark this ticket as sold
-            setTickets(
-              tickets.map((ticket) =>
-                ticket.id === selectedTicket.id
-                  ? { ...ticket, is_sold: true, customer: res.data.customer }
-                  : ticket,
-              ),
-            );
-
-            // Update event's available count
-            if (selectedEvent) {
-              setSelectedEvent({
-                ...selectedEvent,
-                available_tickets: selectedEvent.available_tickets - 1,
-              });
-            }
-
-            setShowPopup(false);
-            setSelectedTicket(null);
-            alert("Ticket purchased successfully!");
-          })
-          .catch((err) => {
-            console.log("Purchase error:", err);
-            console.log("Error response:", err.response);
-            alert(err.response?.data?.error || "Error purchasing ticket");
-          });
+      if (shouldRegsister) {
+        navigate("/register") //navigate to register
+      } else {
+        navigate("/login") //navigate to login
       }
+      return
+   }
+
+      if (!selectedTicket) {
+        alert("No ticket selected");
+        return;
+      }
+      console.log("Purchasing ticket:", selectedTicket.id);
+
+      api
+        .post(`/api/tickets/${selectedTicket.id}/purchase/`)
+        .then((res) => {
+          console.log("Purchase successful:", res.data);
+
+          // Update the tickets list to mark this ticket as sold
+          setTickets(
+            tickets.map((ticket) =>
+              ticket.id === selectedTicket.id
+                ? { ...ticket, is_sold: true, customer: res.data.customer }
+                : ticket,
+            ),
+          );
+
+          // Update event's available count
+          if (selectedEvent) {
+            setSelectedEvent({
+              ...selectedEvent,
+              available_tickets: selectedEvent.available_tickets - 1,
+            });
+          }
+
+          setShowPopup(false);
+          setSelectedTicket(null);
+          alert("Ticket purchased successfully!");
+        })
+        .catch((err) => {
+          console.log("Purchase error:", err);
+          console.log("Error response:", err.response);
+          alert(err.response?.data?.error || "Error purchasing ticket");
+        });
     }
   };
 
